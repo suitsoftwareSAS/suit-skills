@@ -1,7 +1,7 @@
 #!/bin/bash
 # install-skills.sh - Instala skills según el agente de IA usado
 
-SKILLS_REPO="git@github.com:tu-usuario/claude-skills.git"
+SKILLS_REPO="https://github.com/suitsoftwareSAS/suit-skills.git"
 
 # ─── Detectar agente ────────────────────────────────────────────────
 detect_agent() {
@@ -96,7 +96,7 @@ fi
 
 # ─── Agregar referencia en el archivo de contexto ───────────────────
 if [ -f "$CONTEXT_FILE" ]; then
-  if ! grep -q "claude-skills" "$CONTEXT_FILE"; then
+  if ! grep -q "suit-skills" "$CONTEXT_FILE"; then
     echo "" >> "$CONTEXT_FILE"
     echo "## Skills" >> "$CONTEXT_FILE"
     echo "Skills disponibles en \`$TARGET_DIR/\`. Usa el tool \`view\` para leerlas antes de tareas complejas." >> "$CONTEXT_FILE"
