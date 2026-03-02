@@ -22,7 +22,7 @@ get_target_dir() {
     claude)      echo ".claude/skills" ;;
     opencode)    echo ".opencode/skills" ;;
     antigravity) echo ".antigravity/skills" ;;
-    *)           echo ".ai/skills" ;;  # fallback genérico
+    *)           echo ".ai/skills" ;;
   esac
 }
 
@@ -35,14 +35,14 @@ get_context_file() {
   esac
 }
 
-# ─── Parsear argumentos ──────────────────────────────────────────────
+# ─── Parsear argumentos ─────────────────────────────────────────────
 AGENT=""
 FORCE=false
 
 while [[ "$#" -gt 0 ]]; do
   case $1 in
-    --agent|-a)   AGENT="$2"; shift ;;
-    --force|-f)   FORCE=true ;;
+    --agent|-a)  AGENT="$2"; shift ;;
+    --force|-f)  FORCE=true ;;
     --help|-h)
       echo "Uso: ./install-skills.sh [--agent claude|opencode|antigravity] [--force]"
       echo ""
@@ -87,12 +87,25 @@ mkdir -p "$(dirname "$TARGET_DIR")"
 
 if [ -d "$TARGET_DIR" ] && [ "$FORCE" = false ]; then
   echo "🔄 Actualizando skills existentes..."
-  git -C "$TARGET_DIR" pull
+  GIT_TERMINAL_PROMPT=0 git -C "$TARGET_DIR" pull --depth 1 --quiet
+
+  if [ $? -ne 0 ]; then
+    echo "❌ Error al actualizar. Intenta con --force para reinstalar."
+    exit 1
+  fi
 else
   [ -d "$TARGET_DIR" ] && rm -rf "$TARGET_DIR"
   echo "⬇️  Clonando skills..."
-  git clone "$SKILLS_REPO" "$TARGET_DIR"
+  GIT_TERMINAL_PROMPT=0 git clone --depth 1 --quiet "$SKILLS_REPO" "$TARGET_DIR"
+
+  if [ $? -ne 0 ]; then
+    echo "❌ Error al clonar el repositorio."
+    echo "   Verifica que $SKILLS_REPO sea accesible."
+    exit 1
+  fi
 fi
+
+echo "✅ Skills clonadas en $TARGET_DIR"
 
 # ─── Agregar referencia en el archivo de contexto ───────────────────
 if [ -f "$CONTEXT_FILE" ]; then
@@ -109,4 +122,4 @@ else
 fi
 
 echo ""
-echo "✅ Skills instaladas correctamente para $AGENT"
+echo "🎉 Skills instaladas correctamente para $AGENT"
