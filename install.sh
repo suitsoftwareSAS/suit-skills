@@ -83,8 +83,6 @@ echo "📝 Context: $CONTEXT_FILE"
 echo ""
 
 # ─── Instalar / actualizar skills ───────────────────────────────────
-mkdir -p "$(dirname "$TARGET_DIR")"
-
 TEMP_DIR=$(mktemp -d)
 
 echo "⬇️  Clonando skills..."
@@ -97,10 +95,10 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# Copiar solo el contenido de la carpeta skills/
 if [ -d "$TEMP_DIR/skills" ]; then
   [ -d "$TARGET_DIR" ] && rm -rf "$TARGET_DIR"
-  cp -r "$TEMP_DIR/skills" "$TARGET_DIR"
+  mkdir -p "$TARGET_DIR"
+  cp -r "$TEMP_DIR/skills/." "$TARGET_DIR"
   echo "✅ Skills copiadas en $TARGET_DIR"
 else
   echo "❌ No se encontró carpeta 'skills/' en el repositorio."
