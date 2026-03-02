@@ -85,27 +85,30 @@ echo ""
 # ─── Instalar / actualizar skills ───────────────────────────────────
 mkdir -p "$(dirname "$TARGET_DIR")"
 
-if [ -d "$TARGET_DIR" ] && [ "$FORCE" = false ]; then
-  echo "🔄 Actualizando skills existentes..."
-  GIT_TERMINAL_PROMPT=0 git -C "$TARGET_DIR" pull --depth 1 --quiet
+TEMP_DIR=$(mktemp -d)
 
-  if [ $? -ne 0 ]; then
-    echo "❌ Error al actualizar. Intenta con --force para reinstalar."
-    exit 1
-  fi
-else
-  [ -d "$TARGET_DIR" ] && rm -rf "$TARGET_DIR"
-  echo "⬇️  Clonando skills..."
-  GIT_TERMINAL_PROMPT=0 git clone --depth 1 --quiet "$SKILLS_REPO" "$TARGET_DIR"
+echo "⬇️  Clonando skills..."
+GIT_TERMINAL_PROMPT=0 git clone --depth 1 --quiet "$SKILLS_REPO" "$TEMP_DIR"
 
-  if [ $? -ne 0 ]; then
-    echo "❌ Error al clonar el repositorio."
-    echo "   Verifica que $SKILLS_REPO sea accesible."
-    exit 1
-  fi
+if [ $? -ne 0 ]; then
+  echo "❌ Error al clonar el repositorio."
+  echo "   Verifica que $SKILLS_REPO sea accesible."
+  rm -rf "$TEMP_DIR"
+  exit 1
 fi
 
-echo "✅ Skills clonadas en $TARGET_DIR"
+# Copiar solo el contenido de la carpeta skills/
+if [ -d "$TEMP_DIR/skills" ]; then
+  [ -d "$TARGET_DIR" ] && rm -rf "$TARGET_DIR"
+  cp -r "$TEMP_DIR/skills" "$TARGET_DIR"
+  echo "✅ Skills copiadas en $TARGET_DIR"
+else
+  echo "❌ No se encontró carpeta 'skills/' en el repositorio."
+  rm -rf "$TEMP_DIR"
+  exit 1
+fi
+
+rm -rf "$TEMP_DIR"
 
 # ─── Agregar referencia en el archivo de contexto ───────────────────
 if [ -f "$CONTEXT_FILE" ]; then
